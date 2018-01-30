@@ -5,16 +5,33 @@ const Button = (props) => (
     <button onClick={props.callBack}> {props.nimi} </button>
 )
 
-const Statistics = ({state}) => (
+const Statistics = ({state}) => {
+    const tulokset = state.keskiarvo
+    if (tulokset !== undefined) {
+        return (
+            <div>
+                <h2> Tulokset </h2>
+                <Amounts state={state} />
+                <Statistic nimi="Keskiarvo" arvo={state.keskiarvo} />
+                <Statistic nimi="Positiivisia" arvo={state.positiiviset} />
+            </div>
+        )
+    } else {
+        return (
+            <div>
+                ei yhtään palautetta annettu
+            </div>
+        )
+    }
+
+}
+
+const Amounts = ({state}) => (
     <div>
-        <h2> Tulokset </h2>
         <Statistic nimi="Hyvä" arvo={state.hyva} />
         <Statistic nimi="Neutraali" arvo={state.neutraali} />
         <Statistic nimi="Huono" arvo={state.huono} />
-        <Statistic nimi="Keskiarvo" arvo={state.keskiarvo} />
-        <Statistic nimi="Positiivisia" arvo={state.positiiviset} />
     </div>
-
 )
 
 const Statistic = (props) => (
