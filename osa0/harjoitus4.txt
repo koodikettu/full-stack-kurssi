@@ -1,0 +1,20 @@
+kayttaja->selain: käyttäjä kirjoittaa uuden muistiinpanon ja klikkaa talleta
+selain->palvelin: selain lähettää palvelimelle POST /new_note kutsun, joka sisältää käyttäjän kirjoittaman viestin
+palvelin->selain: status 302, palvelin ohjaa selaimen osoitteeseen /notes
+selain->palvelin: GET /notes
+palvelin->selain: status 200, palvelin palauttaa HTML-dokumentin
+selain->palvelin: GET /main.css
+selain->palvelin: GET /main.js
+palvelin->selain: status 200, main.css
+palvelin->selain: status 200, main.js
+note left of selain:
+    selain näyttää HTML-dokumentin sisällön
+end note
+note left of selain:
+    selain suorittaa main.js:n koodin ja lähettää palvelimelle pyynnön data.json-tiedostosta
+end note
+selain->palvelin: GET /data.json
+palvelin->selain: status 200, data.json
+note left of selain:
+    selain lisää tietoa HTML-dokumenttiin data.json:in sisältämän datan perusteella
+end note

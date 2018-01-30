@@ -1,0 +1,5 @@
+kayttaja->selain: käyttäjä kirjoittaa viestin ja klikkaa tallenna
+selain->palvelin: selain lähettää käyttäjän viestin palvelimelle POST-kutsulla
+note left of selain
+    selain lisää käyttäjän viestin näkyvissä olevaan HTML-dokumenttiin
+end note

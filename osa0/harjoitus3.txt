@@ -1,0 +1,21 @@
+kayttaja->selain:kayttaja kirjoittaa url-osoitteen
+selain->palvelin: GET https://fullstack-exampleapp.herokuapp.com/notes
+palvelin->selain: status 200, HTML-dokumentti
+note left of selain
+    selain hakee HTML-dokumentista viitatut tiedostot
+end note
+selain->palvelin: GET main.css
+selain->palvelin: GET main.js
+palvelin->selain: status 200, main.css
+palvelin->selain: status 200, main.js
+note left of selain
+    selain näyttää HTML-dokumentin sisällön
+end note
+note left of selain
+    selain suorittaa main.js:n koodin joka hakee palvelimelta data.json-tiedoston
+end note
+selain->palvelin: GET data.json
+palvelin->selain: status 200, data.json
+note left of selain
+    selain lisää näyttämäänsä HTML-dokumenttiin elementtejä data.json-tiedoston perusteella
+end note
