@@ -27,13 +27,14 @@ class App extends React.Component {
     render(){
       return (
         <div>
+            <h2>Anna palautetta</h2>
             <button onClick={this.hyva}> hyvä </button>
             <button onClick={this.neutraali}> neutraali </button>
             <button onClick={this.huono}> huono </button>
             <h2> Tulokset </h2>
-          Hyvä: { this.state.hyva } <br />
-          Neutraali: { this.state.neutraali } <br />
-          Huono: { this.state.huono } <br />
+            Hyvä: { this.state.hyva } <br />
+            Neutraali: { this.state.neutraali } <br />
+            Huono: { this.state.huono } <br />
         </div>
       )
     }
