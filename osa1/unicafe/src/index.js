@@ -11,9 +11,16 @@ const Statistics = ({state}) => {
         return (
             <div>
                 <h2> Tulokset </h2>
-                <Amounts state={state} />
-                <Statistic nimi="Keskiarvo" arvo={state.keskiarvo} />
-                <Statistic nimi="Positiivisia" arvo={state.positiiviset} />
+                <table>
+                    <tbody>
+
+                        <Statistic nimi="Hyvä" arvo={state.hyva} />
+                        <Statistic nimi="Neutraali" arvo={state.neutraali} />
+                        <Statistic nimi="Huono" arvo={state.huono} />
+                        <Statistic nimi="Keskiarvo" arvo={state.keskiarvo} />
+                        <Statistic nimi="Positiivisia" arvo={state.positiiviset} />
+                    </tbody>
+                </table>
             </div>
         )
     } else {
@@ -26,18 +33,15 @@ const Statistics = ({state}) => {
 
 }
 
-const Amounts = ({state}) => (
-    <div>
-        <Statistic nimi="Hyvä" arvo={state.hyva} />
-        <Statistic nimi="Neutraali" arvo={state.neutraali} />
-        <Statistic nimi="Huono" arvo={state.huono} />
-    </div>
-)
-
 const Statistic = (props) => (
-    <div>
-        { props.nimi }: {props.arvo}    
-    </div>
+    <tr>
+        <td>
+            { props.nimi }
+        </td>
+        <td>
+            {props.arvo}
+        </td>    
+    </tr>
 )
 
 class App extends React.Component {
@@ -81,27 +85,6 @@ class App extends React.Component {
         }
 
     }
-
-/*     neutraali = () => {
-        let currentState = Object.assign({}, this.state);
-        currentState.neutraali++;
-        this.setState({
-            neutraali: currentState.neutraali,
-            keskiarvo: this.keskiarvo(currentState),
-            positiiviset: this.positiiviset(currentState)
-        })
-    }
-
-    huono = () => {
-        let currentState = Object.assign({}, this.state);
-        currentState.huono++;
-        this.setState({
-            huono: currentState.huono,
-            keskiarvo: this.keskiarvo(currentState),
-            positiiviset: this.positiiviset(currentState) 
-        })
-    } */
-
 
     render(){
       return (
