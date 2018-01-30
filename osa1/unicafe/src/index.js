@@ -11,16 +11,55 @@ class App extends React.Component {
       }
     }
 
+    lkm = (state) => (state.hyva + state.neutraali + state.huono)
+
+    keskiarvo = (state) => {
+        let summa = 0
+        let lukumaara = this.lkm(state)
+        summa += state.hyva
+        summa -= state.huono
+        if (lukumaara !== 0) {
+            return Math.round(summa / lukumaara * 10) / 10
+        }
+        return undefined
+    }
+
+    positiiviset = (state) => {
+        let lukumaara = this.lkm(state)
+        if (lukumaara !== 0) {
+            return Math.round(state.hyva / lukumaara * 1000) / 10
+        }
+        return undefined
+    }
+
     hyva = () => {
-        this.setState({ hyva: this.state.hyva + 1})
+        let currentState = Object.assign({}, this.state);
+        currentState.hyva++;
+        this.setState({
+            hyva: currentState.hyva,
+            keskiarvo: this.keskiarvo(currentState),
+            positiiviset: this.positiiviset(currentState)
+        })
     }
 
     neutraali = () => {
-        this.setState({ neutraali: this.state.neutraali + 1})
+        let currentState = Object.assign({}, this.state);
+        currentState.neutraali++;
+        this.setState({
+            neutraali: currentState.neutraali,
+            keskiarvo: this.keskiarvo(currentState),
+            positiiviset: this.positiiviset(currentState)
+        })
     }
 
     huono = () => {
-        this.setState({ huono: this.state.huono + 1})
+        let currentState = Object.assign({}, this.state);
+        currentState.huono++;
+        this.setState({
+            huono: currentState.huono,
+            keskiarvo: this.keskiarvo(currentState),
+            positiiviset: this.positiiviset(currentState) 
+        })
     }
 
 
@@ -35,6 +74,8 @@ class App extends React.Component {
             Hyvä: { this.state.hyva } <br />
             Neutraali: { this.state.neutraali } <br />
             Huono: { this.state.huono } <br />
+            Keskiarvo: { this.state.keskiarvo } <br />
+            Positiivisia: {this.state.positiiviset} %<br /> 
         </div>
       )
     }
