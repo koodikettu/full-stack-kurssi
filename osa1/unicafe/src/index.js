@@ -71,17 +71,18 @@ class App extends React.Component {
         return undefined
     }
 
-    hyva = () => {
-        let currentState = Object.assign({}, this.state);
-        currentState.hyva++;
-        this.setState({
-            hyva: currentState.hyva,
-            keskiarvo: this.keskiarvo(currentState),
-            positiiviset: this.positiiviset(currentState)
-        })
+    klikki = (property) => {
+        return () => {
+            let newState = Object.assign({}, this.state);
+            newState[property]++;
+            newState.keskiarvo = this.keskiarvo(newState)
+            newState.positiiviset = this.positiiviset(newState)
+            this.setState(newState)
+        }
+
     }
 
-    neutraali = () => {
+/*     neutraali = () => {
         let currentState = Object.assign({}, this.state);
         currentState.neutraali++;
         this.setState({
@@ -99,16 +100,16 @@ class App extends React.Component {
             keskiarvo: this.keskiarvo(currentState),
             positiiviset: this.positiiviset(currentState) 
         })
-    }
+    } */
 
 
     render(){
       return (
         <div>
             <h2>Anna palautetta</h2>
-            <Button callBack={this.hyva} nimi="hyvä" />
-            <Button callBack={this.neutraali} nimi="neutraali" />
-            <Button callBack={this.huono} nimi="huono" />
+            <Button callBack={this.klikki('hyva')} nimi="hyvä" />
+            <Button callBack={this.klikki('neutraali')} nimi="neutraali" />
+            <Button callBack={this.klikki('huono')} nimi="huono" />
             <Statistics state={this.state} />
         </div>
       )
