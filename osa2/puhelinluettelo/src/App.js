@@ -21,41 +21,23 @@ class App extends React.Component {
     this.addPerson = (e) => {
       e.preventDefault()
       let newState = Object.assign(this.state)
-      const existingPerson = this.state.persons.find(p => p.name === this.state.newName)
-      if (existingPerson && window.confirm(existingPerson.name + ' on jo luettelossa, korvataanko numero?')) {
-        existingPerson.number = this.state.newNumber
-        personService.update(existingPerson.id, existingPerson).then(() => {
+      const personObject = {name: this.state.newName, number: this.state.newNumber}
+      const existingPerson = this.state.persons.find(p => p.name === personObject.name)
+      if (existingPerson) {
+        personService.update(existingPerson.id, personObject).then(response => {
+          existingPerson.number = this.state.newNumber
           this.setState({
-            error: `Päivitettiin numero henkilölle '${existingPerson.name}'`,
+            error: `Päivitettiin henkilön ${existingPerson.name} puhelinnumero ${existingPerson.number}`,
             newName: '',
             newNumber: ''
           })
           setTimeout(() => {
             this.setState({error: null})
           }, 2000)
+        }).catch(error => {
+          console.log(error)
         })
-        .catch(error => {
-          this.setState({
-            error: `Henkilö '${existingPerson.name}' on jo poistettu`,
-            newName: '',
-            newNumber: ''
-          })
-          const newPersons = this.state.persons.filter(p => p.id !== existingPerson.id)
-          this.setState({
-            persons: newPersons,
-            personsToShow: newPersons.filter(person =>
-              person.name.toLowerCase().includes(this.state.filterValue.toLowerCase()))
-          })
-
-          setTimeout(() => {
-            this.setState({error: null})
-          }, 2000)
-        })
-        return
-
-      }
-      if (!existingPerson) {
-        const personObject = {name: this.state.newName, number: this.state.newNumber}
+      } else {
         personService.create(personObject).then(response => {
           const newPersons = this.state.persons.concat(response.data)
           this.setState({
@@ -69,34 +51,34 @@ class App extends React.Component {
           setTimeout(() => {
             this.setState({error: null})
           }, 2000)
-        })
-        return
-      }
-      if (existingPerson) {
-        this.setState({
-          newName: '',
-          newNumber: ''
+        }).catch(error => {
+          console.log(error)
         })
       }
+
     }
 
     this.removePerson = (person) => {
       return () => {
         const result = window.confirm('Poistetaanko ' + person.name + '?')
         if (result) {
-          personService.remove(person.id)
-          const newPersons = this.state.persons.filter(p => p.id !== person.id)
-          this.setState({
-            persons: newPersons,
-            personsToShow: newPersons.filter(person =>
-              person.name.toLowerCase().includes(this.state.filterValue.toLowerCase()))
+          personService.remove(person.id).then(response => {
+            const newPersons = this.state.persons.filter(p => p.id !== person.id)
+            this.setState({
+              persons: newPersons,
+              personsToShow: newPersons.filter(person =>
+                person.name.toLowerCase().includes(this.state.filterValue.toLowerCase()))
+            })
+            this.setState({
+              error: `Poistettiin henkilö '${person.name}'`
+            })
+            setTimeout(() => {
+              this.setState({error: null})
+            }, 2000)
+          }).catch(error => {
+            console.log(error)
           })
-          this.setState({
-            error: `Poistettiin henkilö '${person.name}'`
-          })
-          setTimeout(() => {
-            this.setState({error: null})
-          }, 2000)
+
         }
       }
     }
@@ -139,7 +121,7 @@ class App extends React.Component {
           </div>
         </form>
         <h2>Numerot</h2>
-        { this.state.personsToShow.map(person => <Person key={person.name} person={person} handleRemove={this.removePerson(person)}/>)}
+        { this.state.personsToShow.map(person => <Person key={person.id} person={person} handleRemove={this.removePerson(person)}/>)}
       </div>
     )
   }
