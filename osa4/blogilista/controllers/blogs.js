@@ -17,7 +17,23 @@ blogsRouter.get('/',  async (request, response) => {
 })
   
 blogsRouter.post('/', async (request, response) => {
-    const blog = new Blog(request.body)
+    const blogObject = request.body
+
+    if (!Object.getOwnPropertyNames(blogObject).includes('likes')) {
+        blogObject.likes = 0
+    }
+
+    if (!Object.getOwnPropertyNames(blogObject).includes('title')) {
+        response.status(400).send()
+        return
+    }
+
+    if (!Object.getOwnPropertyNames(blogObject).includes('url')) {
+        response.status(400).send()
+        return
+    }
+
+    const blog = new Blog(blogObject)
 
     const result = await blog.save()
         

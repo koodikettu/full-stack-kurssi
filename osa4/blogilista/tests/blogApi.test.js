@@ -95,6 +95,51 @@ test('a valid blog can be added', async () => {
 
 })
 
+test('if new blog does not have likes property, it is set to 0', async () => {
+    const newBlog = {
+        title: 'New blog without likes title',
+        author: 'Markku',
+        url: 'cs.helsinki.fi'
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    const response = await api
+        .get('/api/blogs')
+    
+    expect(response.body.length).toBe(4)
+
+    expect(response.body[3].likes).toBe(0)
+
+})
+
+test('if new blog does not have title property, should return bad request 400', async () => {
+    const newBlog = {
+        author: 'Markku',
+        url: 'cs.helsinki.fi'
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+
+})
+
+test('if new blog does not have url property, should return bad request 400', async () => {
+    const newBlog = {
+        title: 'New blog without url',
+        author: 'Markku'
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+
+})
+
 afterAll(() => {
   server.close()
 })
