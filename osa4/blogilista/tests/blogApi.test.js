@@ -2,54 +2,16 @@ const supertest = require('supertest')
 const Blog = require('../models/blog')
 const { app, server } = require('../index')
 const api = supertest(app)
+const testHelper = require('./testHelper')
 
-const initialBlogs = [
-    {
-        title: "React patterns",
-        author: "Michael Chan",
-        url: "https://reactpatterns.com/",
-        likes: 7
-      },
-      {
-        title: "Go To Statement Considered Harmful",
-        author: "Edsger W. Dijkstra",
-        url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
-        likes: 5
-      },
-      {
-        title: "Canonical string reduction",
-        author: "Edsger W. Dijkstra",
-        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
-        likes: 12
-      },
-      {
-        title: "First class tests",
-        author: "Robert C. Martin",
-        url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
-        likes: 10
-      },
-      {
-        title: "TDD harms architecture",
-        author: "Robert C. Martin",
-        url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html",
-        likes: 0
-      },
-      {
-        title: "Type wars",
-        author: "Robert C. Martin",
-        url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-        likes: 2
-      }  
-  ]
+
   
-  beforeAll(async () => {
+  beforeEach(async () => {
     await Blog.remove({})
   
-    let blogObject = new Blog(initialBlogs[0])
-    await blogObject.save()
-  
-    blogObject = new Blog(initialBlogs[1])
-    await blogObject.save()
+    const blogObjects = testHelper.initialBlogs.map(blog => new Blog(blog))
+    const promiseArray = blogObjects.map(blog => blog.save())
+    await Promise.all(promiseArray)
   })
 
 test('notes are returned as json', async () => {
@@ -59,21 +21,24 @@ test('notes are returned as json', async () => {
     .expect('Content-Type', /application\/json/)
 })
 
-test('there are five notes', async () => {
+test('there are six notes', async () => {
     const response = await api
       .get('/api/blogs')
   
-    expect(response.body.length).toBe(2)
+    expect(response.body.length).toBe(6)
   })
   
-test('the first note is about React patterns', async () => {
+test('one is about React patterns', async () => {
     const response = await api
       .get('/api/blogs')
   
-    expect(response.body[0].title).toBe('React patterns')
+    expect(response.body.find(b => b.title ==='React patterns').author).toBe('Michael Chan')
   })
 
 test('a valid blog can be added', async () => {
+
+    const blogsBefore = await testHelper.blogsInDb()
+
     const newBlog = {
         title: 'New blog title',
         author: 'Markku',
@@ -86,18 +51,20 @@ test('a valid blog can be added', async () => {
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
-    const response = await api
-        .get('/api/blogs')
+    const blogsAfter = await testHelper.blogsInDb()
     
-    expect(response.body.length).toBe(3)
+    expect(blogsAfter.length).toBe(blogsBefore.length + 1)
 
-    expect(response.body[2].title).toBe('New blog title')
+    expect(blogsAfter.map(b => b.title)).toContain('New blog title')
 
 })
 
 test('if new blog does not have likes property, it is set to 0', async () => {
+
+    const blogsBefore = await testHelper.blogsInDb()
+
     const newBlog = {
-        title: 'New blog without likes title',
+        title: 'New blog without likes property',
         author: 'Markku',
         url: 'cs.helsinki.fi'
     }
@@ -107,16 +74,19 @@ test('if new blog does not have likes property, it is set to 0', async () => {
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
-    const response = await api
-        .get('/api/blogs')
+    const blogsAfter = await testHelper.blogsInDb()
     
-    expect(response.body.length).toBe(4)
+    expect(blogsAfter.length).toBe(blogsBefore.length + 1)
 
-    expect(response.body[3].likes).toBe(0)
+    expect(blogsAfter.find(b => b.title === 'New blog without likes property').likes).toBe(0)
 
 })
 
 test('if new blog does not have title property, should return bad request 400', async () => {
+    
+    const blogsBefore = await testHelper.blogsInDb()
+
+    
     const newBlog = {
         author: 'Markku',
         url: 'cs.helsinki.fi'
@@ -126,9 +96,19 @@ test('if new blog does not have title property, should return bad request 400', 
         .send(newBlog)
         .expect(400)
 
+    const blogsAfter = await testHelper.blogsInDb()
+
+    expect(blogsAfter.length).toBe(blogsBefore.length)
+
+
+
 })
 
 test('if new blog does not have url property, should return bad request 400', async () => {
+    
+    const blogsBefore = await testHelper.blogsInDb()
+
+    
     const newBlog = {
         title: 'New blog without url',
         author: 'Markku'
@@ -137,6 +117,52 @@ test('if new blog does not have url property, should return bad request 400', as
     await api.post('/api/blogs')
         .send(newBlog)
         .expect(400)
+
+    const blogsAfter = await testHelper.blogsInDb()
+
+    expect(blogsAfter.length).toBe(blogsBefore.length)
+
+})
+
+test('should remove blog with given id', async () => {
+    
+    const blogsBefore = await testHelper.blogsInDb()
+
+    const id = blogsBefore[0].id;
+
+    await api.delete('/api/blogs/' + id)
+        .expect(204)
+
+    const blogsAfter = await testHelper.blogsInDb()
+
+    expect(blogsAfter.length).toBe(blogsBefore.length - 1)
+
+    expect(blogsAfter.map(b => b.id)).not.toContain(id)
+
+
+})
+
+test('should update blog with given id', async () => {
+    
+    const blogsBefore = await testHelper.blogsInDb()
+
+    const blog = blogsBefore[0]
+
+    const originalLikes = blog.likes
+    blog.likes += 10
+
+    await api.put('/api/blogs/' + blog.id)
+        .send(blog)
+
+    const blogsAfter = await testHelper.blogsInDb()
+
+    expect(blogsAfter.length).toBe(6)
+
+    expect(blogsAfter.find(b => {
+        return b.id + '' === blog.id. 
+    })
+        .author).toBe(originalLikes + 10)
+
 
 })
 
