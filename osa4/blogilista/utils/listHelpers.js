@@ -31,12 +31,29 @@ const mostBlogs = (blogs) => {
     const compareFunc = (a, b) => b.blogs - a.blogs
     return Object.values(blogsByAuthor).sort(compareFunc)[0]
     
+}
 
+const mostLikes = (blogs) => {
+    const likesByAuthor = {}
+    blogs.forEach(blog => {
+        if (likesByAuthor[blog.author]) {
+            likesByAuthor[blog.author].likes += blog.likes
+        } else {
+            likesByAuthor[blog.author] = {
+                author: blog.author,
+                likes: blog.likes
+            }
+        }
+    })
+    const compareFunc = (a, b) => b.likes - a.likes
+    return Object.values(likesByAuthor).sort(compareFunc)[0]
+    
 }
 
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
-    mostBlogs
+    mostBlogs,
+    mostLikes
 }
