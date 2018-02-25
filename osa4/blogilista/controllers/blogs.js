@@ -4,10 +4,10 @@ const Blog = require('../models/blog')
 const formatBlog = (blog) => {
   return {
     id: blog._id,
-    title: note.title,
-    author: note.author,
-    url: note.url,
-    likes: note.likes
+    title: blog.title,
+    author: blog.author,
+    url: blog.url,
+    likes: blog.likes
   }
 }
 
@@ -16,14 +16,13 @@ blogsRouter.get('/',  async (request, response) => {
     response.json(blogs)
 })
   
-blogsRouter.post('/', (request, response) => {
+blogsRouter.post('/', async (request, response) => {
     const blog = new Blog(request.body)
 
-    blog
-        .save()
-        .then(result => {
-        response.status(201).json(result)
-        })
-    })
+    const result = await blog.save()
+        
+    response.status(201).json(result)
+        
+})
 
 module.exports = blogsRouter

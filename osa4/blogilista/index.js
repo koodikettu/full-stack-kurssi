@@ -19,12 +19,12 @@ mongoose
     console.log(err)
   })
 
-
+app.use(cors())
+app.use(bodyParser.json())
 app.use('/api/blogs', blogsRouter)
 
 
-app.use(cors())
-app.use(bodyParser.json())
+
 
 const server = http.createServer(app)
 
