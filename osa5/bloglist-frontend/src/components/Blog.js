@@ -25,13 +25,13 @@ class Blog extends React.Component {
     }
     if (!this.state.isOpen) {
       return (
-        <div style={blogStyle}>
+        <div className="blog-content" style={blogStyle}>
           <span onClick={this.toggle}>{this.props.blog.title ? this.props.blog.title : '(blog with no title)'}</span> {this.props.blog.author}
         </div>  
       )
     } else {
       return (
-        <div style={blogStyle}>
+        <div className="blog-content" style={blogStyle}>
           <b><span onClick={this.toggle}>{this.props.blog.title ? this.props.blog.title : '(blog with no title)'}</span> {this.props.blog.author}</b><br />
           <a href={this.props.blog.url} target="_blank" >{this.props.blog.url}</a><br />
           Likes: {this.props.blog.likes} <button onClick={this.props.likeFunction} >like</button><br />
