@@ -23,7 +23,9 @@ class App extends React.Component {
         password: this.state.password
       })
       this.setState({ username: '', password: '', user: user})
+      window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
       console.log('login success')
+      console.log(user)
     } catch (exception) {
       console.log('login error')
       this.setState({
@@ -35,6 +37,11 @@ class App extends React.Component {
     }
   }
 
+  logout = () => {
+    window.localStorage.clear()
+    this.setState({user: null})
+  }
+
   handleLoginFieldChange = (event) => {
     this.setState({ [event.target.name]: event.target.value })
   }
@@ -43,6 +50,11 @@ class App extends React.Component {
     blogService.getAll().then(blogs =>
       this.setState({ blogs })
     )
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON)
+      this.setState({user})
+    }
   } 
 
   render() {
@@ -67,6 +79,12 @@ class App extends React.Component {
     return (
       <div>
         <h2>blogs</h2>
+
+        <div> 
+          {this.state.user.name} logged in
+          <button type="button" onClick={this.logout}>logout</button>
+        </div>
+
         {this.state.blogs.map(blog => 
           <Blog key={blog._id} blog={blog}/>
         )}
