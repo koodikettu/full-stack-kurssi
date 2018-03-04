@@ -42,6 +42,7 @@ class App extends React.Component {
       const blogs = this.state.blogs.splice(0)
       console.log(blogs)
       blogs.push(blog)
+      this.sortBlogs(blogs)
       this.setState({blogs: blogs})
       this.notify(`new blog '${blog.title}' by ${blog.author} added`)
     } catch (exception) {
@@ -81,11 +82,34 @@ class App extends React.Component {
     this.setState({ [event.target.name]: event.target.value })
   }
 
-  like = (blogId) => {
-    const blogList = Object.assign(this.state.blogs)
-    const blog = blogList.find(b => b._id === blogId)
-    blog.likes++
-    this.setState({blogs: blogList})
+  like = async (blogId) => {
+    try {
+      const blogList = Object.assign(this.state.blogs)
+      const blog = blogList.find(b => b._id === blogId)
+      blog.likes++
+      await blogService.update(blog)
+      this.sortBlogs(blogList)
+      this.setState({blogs: blogList})
+      this.notify(`new like to blog '${blog.title}' by ${blog.author} added`)
+    } catch (exception) {
+      console.log('error updating likes')
+      this.notify(`failed to add a new like`)
+    }
+  }
+
+  deleteBlog = async (blog) => {
+    console.log('deleting', blog._id)
+    if (window.confirm(`Delete ${blog.title} by ${blog.author} ?`)) {
+      try {
+        await blogService.remove(blog._id)
+        const blogList = this.state.blogs.filter(b => b._id !== blog._id)
+        this.setState({blogs: blogList})
+        this.notify(`Deleted ${blog.title} by ${blog.author}`)
+      } catch (exception) {
+        this.notify(`failed to delete blog`)
+      }
+    }
+
   }
 
   getLikeFunction = (blogId) => {
@@ -93,6 +117,23 @@ class App extends React.Component {
       this.like(blogId)
     }
     return result;
+  }
+
+  getDeleteFunction = (blog) => {
+    const result = () => {
+      this.deleteBlog(blog)
+    }
+    return result;
+  }
+
+  sortBlogs = blogs => {
+    console.log('sorting ', blogs)
+    blogs.sort((a,b) => {
+      const aLikes = a.likes ? a.likes : 0
+      const bLikes = b.likes ? b.likes : 0
+      return bLikes - aLikes
+    })
+    console.log('sorted ', blogs)
   }
 
   notify = (message) => {
@@ -103,13 +144,18 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    blogService.getAll().then(blogs =>
+    blogService.getAll().then(blogs => {
+      console.log(blogs)
+      this.sortBlogs(blogs)
       this.setState({ blogs })
+      }
     )
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      this.setState({user})
+      console.log('user', user)
+      this.setState({user: user})
+      console.log(this.state)
       blogService.setToken(user.token)
 
     }
@@ -154,8 +200,11 @@ class App extends React.Component {
         </Togglable>
 
 
-        {this.state.blogs.map(blog => 
-          <Blog key={blog._id} blog={blog} likeFunction={this.getLikeFunction(blog._id)}/>
+        {this.state.blogs.map(blog => {
+          return (
+            <Blog key={blog._id} blog={blog} likeFunction={this.getLikeFunction(blog._id)} deleteFunction={this.getDeleteFunction(blog)} loggedInUsername={this.state.user.username}/>
+          )
+        }
         )}
       </div>
     );
