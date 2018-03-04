@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 class BlogForm extends React.Component {
 
@@ -16,5 +17,13 @@ class BlogForm extends React.Component {
         )
     }
 }
+
+BlogForm.propTypes = {
+    submitFunction: PropTypes.func.isRequired,
+    title: PropTypes.string.isRequired,
+    author: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
+    handleFieldChange: PropTypes.func.isRequired
+  }
 
 export default BlogForm 
