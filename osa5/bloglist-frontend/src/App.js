@@ -2,6 +2,10 @@ import React from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import BlogForm from './components/BlogForm'
+import Notification from './components/Notification'
+import Togglable from './components/Togglable'
+import styles from './App.css'
 
 class App extends React.Component {
   constructor(props) {
@@ -10,8 +14,41 @@ class App extends React.Component {
       blogs: [],
       username: '',
       password: '',
-      user: null
+      user: null,
+      author: '',
+      title: '',
+      url: '',
+      error: null
     }
+  }
+
+  handleFieldChange = (event) => {
+    if (event.target.name) {
+      this.setState({ [event.target.name]: event.target.value})
+    }
+  }
+
+  addBlog = async (event) => {
+    event.preventDefault()
+    console.log('adding blog')
+    const newBlog = {
+      title: this.state.title,
+      author: this.state.author,
+      likes: 0,
+      url: this.state.url,
+    }
+    try {
+      const blog = await blogService.save(newBlog)
+      const blogs = this.state.blogs.splice(0)
+      console.log(blogs)
+      blogs.push(blog)
+      this.setState({blogs: blogs})
+      this.notify(`new blog '${blog.title}' by ${blog.author} added`)
+    } catch (exception) {
+      console.log('error saving blog')
+      this.notify(`failed to add new blog '${newBlog.title}' by ${newBlog.author}`)
+    }
+    
   }
 
   login = async(event) => {
@@ -24,26 +61,45 @@ class App extends React.Component {
       })
       this.setState({ username: '', password: '', user: user})
       window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
-      console.log('login success')
+      blogService.setToken(user.token)
+      this.notify('olet kirjautunut sisään')
       console.log(user)
     } catch (exception) {
       console.log('login error')
-      this.setState({
-        error: 'käyttäjätunnus tai salasana virheellinen'
-      })
-      setTimeout(() => {
-        this.setState({ error: null})
-      }, 5000)
+      this.notify('käyttäjätunnus tai salasana virheellinen')
     }
   }
 
   logout = () => {
     window.localStorage.clear()
+    blogService.clearToken()
     this.setState({user: null})
+    this.notify('olet kirjautunut ulos')
   }
 
   handleLoginFieldChange = (event) => {
     this.setState({ [event.target.name]: event.target.value })
+  }
+
+  like = (blogId) => {
+    const blogList = Object.assign(this.state.blogs)
+    const blog = blogList.find(b => b._id === blogId)
+    blog.likes++
+    this.setState({blogs: blogList})
+  }
+
+  getLikeFunction = (blogId) => {
+    const result = () => {
+      this.like(blogId)
+    }
+    return result;
+  }
+
+  notify = (message) => {
+    this.setState({error: message})
+    setTimeout(() => {
+      this.setState({error: null})
+    }, 2500)
   }
 
   componentDidMount() {
@@ -54,6 +110,8 @@ class App extends React.Component {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       this.setState({user})
+      blogService.setToken(user.token)
+
     }
   } 
 
@@ -62,6 +120,7 @@ class App extends React.Component {
     if (this.state.user === null) {
       return (
         <div>
+          <Notification message={this.state.error} />
           <h2>Log in</h2>
           <form onSubmit={this.login}>
             <div>
@@ -78,15 +137,25 @@ class App extends React.Component {
 
     return (
       <div>
+        <Notification message={this.state.error} />
         <h2>blogs</h2>
 
         <div> 
           {this.state.user.name} logged in
           <button type="button" onClick={this.logout}>logout</button>
         </div>
+        <Togglable buttonLabel="lisää blogi">
+          <BlogForm title={this.state.title}
+            author={this.state.author}
+            url={this.state.url}
+            handleFieldChange={this.handleFieldChange}
+            submitFunction={this.addBlog}
+            />
+        </Togglable>
+
 
         {this.state.blogs.map(blog => 
-          <Blog key={blog._id} blog={blog}/>
+          <Blog key={blog._id} blog={blog} likeFunction={this.getLikeFunction(blog._id)}/>
         )}
       </div>
     );
