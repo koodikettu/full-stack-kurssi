@@ -127,13 +127,11 @@ class App extends React.Component {
   }
 
   sortBlogs = blogs => {
-    console.log('sorting ', blogs)
     blogs.sort((a,b) => {
       const aLikes = a.likes ? a.likes : 0
       const bLikes = b.likes ? b.likes : 0
       return bLikes - aLikes
     })
-    console.log('sorted ', blogs)
   }
 
   notify = (message) => {
@@ -143,19 +141,14 @@ class App extends React.Component {
     }, 2500)
   }
 
-  componentDidMount() {
-    blogService.getAll().then(blogs => {
-      console.log(blogs)
-      this.sortBlogs(blogs)
-      this.setState({ blogs })
-      }
-    )
+  async componentDidMount() {
+    const blogs = await blogService.getAll()
+    this.sortBlogs(blogs)
+    this.setState({ blogs })
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      console.log('user', user)
       this.setState({user: user})
-      console.log(this.state)
       blogService.setToken(user.token)
 
     }
@@ -168,7 +161,7 @@ class App extends React.Component {
         <div>
           <Notification message={this.state.error} />
           <h2>Log in</h2>
-          <form onSubmit={this.login}>
+          <form className="loginform" onSubmit={this.login}>
             <div>
               käyttäjätunnus <input type="text" name="username" value={this.state.username} onChange={this.handleLoginFieldChange} />
             </div>
@@ -182,7 +175,7 @@ class App extends React.Component {
     }
 
     return (
-      <div>
+      <div className="app-wrapper" >
         <Notification message={this.state.error} />
         <h2>blogs</h2>
 
