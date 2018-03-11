@@ -1,18 +1,20 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import {actionForAnecdote} from '../reducers/anecdoteReducer'
-import {actionForNotification} from '../reducers/notificationReducer'
+import { createNew } from '../reducers/anecdoteReducer'
+import { notifyWith } from '../reducers/notificationReducer'
+import anecdoteService from '../services/anecdotes'
 
 class AnecdoteForm extends React.Component {
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault()
     const content = e.target.anecdote.value
-    this.props.createAnecdote(content)
-    this.props.setNotification(`New anecdote: '${content}'`)
+    const anecdoteObject = {
+      content,
+      votes: 0
+    }
     e.target.anecdote.value = ''
-    setTimeout(() => {
-      this.props.unsetNotification()
-    }, 5000)
+    this.props.createNew(anecdoteObject)
+    this.props.notifyWith(`New anecdote: '${anecdoteObject.content}'`, 5)
   }
    render() {
      return (
@@ -30,9 +32,8 @@ class AnecdoteForm extends React.Component {
 
 const ConnectedAnecdoteForm = connect(null,
   {
-    setNotification: actionForNotification.setNotification,
-    unsetNotification: actionForNotification.unsetNotification,
-    createAnecdote: actionForAnecdote.createAnecdote
+    createNew: createNew,
+    notifyWith: notifyWith
   }
 )(AnecdoteForm)
 
