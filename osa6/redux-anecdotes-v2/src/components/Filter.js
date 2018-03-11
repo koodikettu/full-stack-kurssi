@@ -1,12 +1,11 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import { actionForFilter } from '../reducers/filterReducer'
 
 class Filter extends React.Component {
     handleChange = (event) => {
       // input-kentän arvo muuttujassa event.target.value
-      console.log(event.target.value)
-      console.log(this.props.store.getState())
-      this.props.store.dispatch(actionForFilter.setFilter(event.target.value))
+      this.props.setFilter(event.target.value)
 
     }
     render() {
@@ -16,10 +15,18 @@ class Filter extends React.Component {
   
       return (
         <div style={style}>
-          filter <input value={this.props.store.getState().filter} onChange={this.handleChange}/>
+          filter <input value={this.props.filter} onChange={this.handleChange}/>
         </div>
       )
     }
   }
 
-  export default Filter
+  const mapStateToProps = (state) => {
+    return {
+        filter: state.filter
+    }
+  }
+  
+  const ConnectedFilter = connect(mapStateToProps, { setFilter: actionForFilter.setFilter })(Filter)
+
+  export default ConnectedFilter
