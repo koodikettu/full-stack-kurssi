@@ -4,8 +4,6 @@ const initialState = null
 
 const notificationReducer = (store = initialState, action) => {
     if (action.type === 'SET_NOTIFICATION') {
-      console.log('reducing')
-      console.log(action.content)
         return action.content
     }
     if (action.type === 'UNSET_NOTIFICATION') {
